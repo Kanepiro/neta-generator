@@ -41,8 +41,25 @@ button.locked{background:var(--lime);color:#10130b;border-color:var(--lime)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#edf8d4;color:#12150d;padding:12px 18px;font-weight:900;opacity:0;pointer-events:none;transition:.2s;z-index:10}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:680px){
-  .wrap{padding:14px 14px 42px}.topbar{padding-bottom:14px}.logo{width:42px;height:42px;font-size:24px}
-  .hero h1{font-size:64px}.hero p{font-size:16px}.grid{grid-template-columns:1fr}.card{min-height:230px;padding:20px}.value{font-size:54px}
+  html,body{height:100%;overflow:hidden}
+  body{min-height:100dvh}
+  .wrap{height:100dvh;max-width:none;padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-rows:auto auto 1fr auto;gap:5px}
+  .topbar{padding:2px 0 5px;min-height:34px}
+  .brand{gap:7px;font-size:14px}.logo{width:28px;height:28px;font-size:18px}.small{font-size:10px}
+  .hero{display:none}
+  .status{margin:0;gap:6px;font-size:11px;line-height:1.1}
+  .dot{width:7px;height:7px}.status b{font-size:16px}
+  .grid{min-height:0;height:100%;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))}
+  .card{min-height:0;padding:7px 8px 6px;overflow:hidden}
+  .cardhead{gap:5px;font-size:10px;line-height:1}.num{font-size:9px}
+  .value{font-size:clamp(18px,6.2vw,28px);line-height:.98;letter-spacing:-.05em;padding:3px 0 5px;overflow-wrap:anywhere;word-break:normal}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .actions button{min-height:28px;padding:3px 2px;font-size:10px;white-space:nowrap}
+  .controls{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:5px;padding:0}
+  .controls button{min-height:34px;padding:5px 4px;font-size:10px;white-space:nowrap}
+  .controls .primary{font-size:11px;padding:5px 4px}
+  .note{display:none}
+  .toast{bottom:12px;padding:8px 12px;font-size:12px}
 }
 </style>
 </head>
