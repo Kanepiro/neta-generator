@@ -1,0 +1,36 @@
+name: Remove fixed saigoni wording
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/remove-saigoni.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove fixed wording
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          s = s.replace('"最後に', '"')
+          s = s.replace("const SENTENCE_STORAGE = 'sentence-generator-v1-bags';", "const SENTENCE_STORAGE = 'sentence-generator-v2-bags';")
+          p.write_text(s)
+          PY
+      - name: Commit change
+        shell: bash
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Remove fixed 最後に wording"
+          git push
