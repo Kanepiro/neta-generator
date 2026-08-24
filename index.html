@@ -3,21 +3,28 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>ネタジェネレーター</title>
+<title>ネタ・文章ジェネレーター</title>
 <meta name="theme-color" content="#11140d" />
 <style>
-:root{
-  --bg:#11140d;--panel:#171b12;--line:#353b2b;--text:#f2f0e8;--muted:#a9aa9f;--lime:#b7ff1f;--lime2:#d5ff76;
-}
+:root{--bg:#11140d;--panel:#171b12;--line:#353b2b;--text:#f2f0e8;--muted:#a9aa9f;--lime:#b7ff1f;--lime2:#d5ff76}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
 body{min-height:100vh}
+button{appearance:none;border:1px solid #414838;background:#15180f;color:var(--text);padding:13px 18px;font:inherit;font-weight:800;cursor:pointer;min-height:48px}
+button:hover{border-color:var(--lime);color:var(--lime)}
+button.locked,.primary{background:var(--lime);color:#11140d;border-color:var(--lime)}
+.primary:hover{color:#11140d;filter:brightness(1.05)}
 .wrap{max-width:980px;margin:0 auto;padding:18px 18px 56px}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 20px;border-bottom:1px solid var(--line)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 12px;border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:12px;font-weight:800}
 .logo{width:48px;height:48px;background:var(--lime);color:#11140d;display:grid;place-items:center;font-size:28px;font-weight:1000;transform:rotate(-5deg)}
-.badge{font-size:12px;letter-spacing:.14em;color:#d7d7ce;margin-top:42px}
-.hero{padding:12px 0 28px;border-bottom:1px solid var(--line)}
+.small{color:#b9b9af}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 0}
+.tab{min-height:44px;background:#11140d;color:#aeb0a5;border-color:var(--line)}
+.tab.active{background:var(--lime);color:#11140d;border-color:var(--lime)}
+.panel{display:none}.panel.active{display:block}
+.badge{font-size:12px;letter-spacing:.14em;color:#d7d7ce;margin-top:28px}
+.hero{padding:0 0 24px;border-bottom:1px solid var(--line)}
 .hero h1{font-size:clamp(52px,11vw,112px);line-height:.86;margin:20px 0 24px;letter-spacing:-.08em;max-width:800px}
 .hero h1 span{color:var(--lime)}
 .hero p{color:#c8c8bd;font-size:18px;line-height:1.7;margin:0;max-width:660px}
@@ -30,35 +37,34 @@ body{min-height:100vh}
 .num{color:var(--lime);font-size:13px;letter-spacing:.08em}
 .value{font-size:clamp(42px,7vw,78px);font-weight:900;line-height:1.05;letter-spacing:-.04em;padding:18px 0 26px;word-break:keep-all}
 .actions{display:flex;gap:10px;flex-wrap:wrap}
-button{appearance:none;border:1px solid #414838;background:#15180f;color:var(--text);padding:13px 18px;font:inherit;font-weight:800;cursor:pointer;min-height:48px}
-button:hover{border-color:var(--lime);color:var(--lime)}
-button.locked{background:var(--lime);color:#10130b;border-color:var(--lime)}
 .controls{display:flex;gap:12px;flex-wrap:wrap;padding:24px 0}
-.primary{background:var(--lime);color:#11140d;border-color:var(--lime);font-size:18px;padding:15px 22px}
-.primary:hover{color:#11140d;filter:brightness(1.05)}
-.small{color:#b9b9af}
 .note{color:var(--muted);font-size:13px;line-height:1.7;border-top:1px solid var(--line);padding-top:20px}
+.sentenceArea{border:1px solid var(--line);min-height:300px;padding:34px;display:flex;flex-direction:column;justify-content:center;gap:22px;background:rgba(255,255,255,.008);margin-top:20px}
+.sentenceLabel{color:var(--lime);font-weight:900;font-size:13px;letter-spacing:.08em}
+.sentenceText{font-size:clamp(34px,5vw,60px);font-weight:900;line-height:1.35;letter-spacing:-.035em}
+.sentenceParts{color:var(--muted);font-size:13px;line-height:1.7}
+.sentenceControls{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#edf8d4;color:#12150d;padding:12px 18px;font-weight:900;opacity:0;pointer-events:none;transition:.2s;z-index:10}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:680px){
-  html,body{height:100%;overflow:hidden}
-  body{min-height:100dvh}
-  .wrap{height:100dvh;max-width:none;padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-rows:auto auto 1fr auto;gap:5px}
-  .topbar{padding:2px 0 5px;min-height:34px}
-  .brand{gap:7px;font-size:14px}.logo{width:28px;height:28px;font-size:18px}.small{font-size:10px}
-  .hero{display:none}
-  .status{margin:0;gap:6px;font-size:11px;line-height:1.1}
-  .dot{width:7px;height:7px}.status b{font-size:16px}
+  html,body{height:100%;overflow:hidden}body{min-height:100dvh}
+  .wrap{height:100dvh;max-width:none;padding:5px 8px calc(5px + env(safe-area-inset-bottom));display:grid;grid-template-rows:auto auto 1fr;gap:4px}
+  .topbar{padding:1px 0 3px;min-height:30px}.brand{gap:7px;font-size:13px}.logo{width:26px;height:26px;font-size:17px}.small{font-size:9px}
+  .tabs{padding:0;gap:4px}.tab{min-height:28px;padding:3px 5px;font-size:10px}
+  .panel.active{min-height:0;height:100%}
+  #netaPanel.active{display:grid;grid-template-rows:auto 1fr auto;gap:4px}
+  .hero{display:none}.status{margin:0;gap:6px;font-size:10px;line-height:1.1}.dot{width:7px;height:7px}.status b{font-size:15px}
   .grid{min-height:0;height:100%;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr))}
-  .card{min-height:0;padding:7px 8px 6px;overflow:hidden}
-  .cardhead{gap:5px;font-size:10px;line-height:1}.num{font-size:9px}
-  .value{font-size:clamp(18px,6.2vw,28px);line-height:.98;letter-spacing:-.05em;padding:3px 0 5px;overflow-wrap:anywhere;word-break:normal}
-  .actions{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-  .actions button{min-height:28px;padding:3px 2px;font-size:10px;white-space:nowrap}
-  .controls{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:5px;padding:0}
-  .controls button{min-height:34px;padding:5px 4px;font-size:10px;white-space:nowrap}
-  .controls .primary{font-size:11px;padding:5px 4px}
+  .card{min-height:0;padding:6px 7px 5px;overflow:hidden}.cardhead{gap:5px;font-size:9px;line-height:1}.num{font-size:8px}
+  .value{font-size:clamp(17px,5.9vw,27px);line-height:.98;letter-spacing:-.05em;padding:2px 0 4px;overflow-wrap:anywhere;word-break:normal}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:4px}.actions button{min-height:26px;padding:2px 1px;font-size:9px;white-space:nowrap}
+  .controls{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:4px;padding:0}.controls button{min-height:31px;padding:4px 3px;font-size:9px;white-space:nowrap}.controls .primary{font-size:10px;padding:4px 3px}
   .note{display:none}
+  #sentencePanel.active{display:grid;grid-template-rows:1fr auto;gap:5px}
+  #sentencePanel .hero{display:none}
+  .sentenceArea{min-height:0;height:100%;margin:0;padding:14px;justify-content:center;gap:12px}
+  .sentenceLabel{font-size:10px}.sentenceText{font-size:clamp(25px,7.8vw,38px);line-height:1.35}.sentenceParts{font-size:9px;line-height:1.5}
+  .sentenceControls{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:4px;margin:0}.sentenceControls button{min-height:31px;padding:4px 3px;font-size:9px;white-space:nowrap}.sentenceControls .primary{font-size:10px}
   .toast{bottom:12px;padding:8px 12px;font-size:12px}
 }
 </style>
@@ -66,28 +72,49 @@ button.locked{background:var(--lime);color:#10130b;border-color:var(--lime)}
 <body>
 <div class="wrap">
   <header class="topbar">
-    <div class="brand"><div class="logo">ネ</div><div>ネタジェネレーター</div></div>
+    <div class="brand"><div class="logo">ネ</div><div>ジェネレーター</div></div>
     <div class="small">PURE RANDOM</div>
   </header>
+  <nav class="tabs" aria-label="ジェネレーター切り替え">
+    <button class="tab active" data-tab="neta">ネタジェネレーター</button>
+    <button class="tab" data-tab="sentence">文章ジェネレーター</button>
+  </nav>
 
-  <section class="hero">
-    <div class="badge">● TREND-FREE / PURE RANDOM</div>
-    <h1>無関係を、<br><span>ぶつけろ。</span></h1>
-    <p>流行データも、おすすめ補正もなし。<br>6つの材料を独立して引くだけ。</p>
+  <section class="panel active" id="netaPanel">
+    <section class="hero">
+      <div class="badge">● TREND-FREE / PURE RANDOM</div>
+      <h1>無関係を、<br><span>ぶつけろ。</span></h1>
+      <p>流行データも、おすすめ補正もなし。<br>6つの材料を独立して引くだけ。</p>
+    </section>
+    <div class="status"><span class="dot"></span><span><b>6</b> カテゴリを抽選しています</span></div>
+    <main class="grid" id="grid"></main>
+    <div>
+      <div class="controls">
+        <button class="primary" id="rerollAll">全部引き直す</button>
+        <button id="copyAll">結果をコピー</button>
+        <button id="resetHistory">抽選履歴をリセット</button>
+      </div>
+      <div class="note">同じカテゴリでは、登録語を一巡するまで同じ言葉は再登場しません。6枠の中でも同じ言葉は重複しません。<br>抽選履歴はこの端末のブラウザ内にだけ保存されます。外部API・AI API・有料サービスは使用しません。</div>
+    </div>
   </section>
 
-  <div class="status"><span class="dot"></span><span><b>6</b> カテゴリを抽選しています</span></div>
-  <main class="grid" id="grid"></main>
-
-  <div class="controls">
-    <button class="primary" id="rerollAll">全部引き直す</button>
-    <button id="copyAll">結果をコピー</button>
-    <button id="resetHistory">抽選履歴をリセット</button>
-  </div>
-  <div class="note">
-    同じカテゴリでは、登録語を一巡するまで同じ言葉は再登場しません。6枠の中でも同じ言葉は重複しません。<br>
-    抽選履歴はこの端末のブラウザ内にだけ保存されます。外部API・AI API・有料サービスは使用しません。
-  </div>
+  <section class="panel" id="sentencePanel">
+    <section class="hero">
+      <div class="badge">● SIMPLE RANDOM SENTENCE</div>
+      <h1>材料を、<br><span>文章にする。</span></h1>
+      <p>主役・場所・物・行動・結末を引いて、短い文章につなげます。</p>
+    </section>
+    <div class="sentenceArea">
+      <div class="sentenceLabel">生成された文章</div>
+      <div class="sentenceText" id="sentenceText"></div>
+      <div class="sentenceParts" id="sentenceParts"></div>
+    </div>
+    <div class="sentenceControls">
+      <button class="primary" id="makeSentence">文章を作る</button>
+      <button id="copySentence">文章をコピー</button>
+      <button id="resetSentence">文章履歴をリセット</button>
+    </div>
+  </section>
 </div>
 <div class="toast" id="toast">コピーしました</div>
 <script>
@@ -136,108 +163,43 @@ const DATA = {
 
 const KEYS = Object.keys(DATA);
 const STORAGE = 'neta-generator-v2-bags';
+const SENTENCE_STORAGE = 'sentence-generator-v1-bags';
+const TAB_STORAGE = 'generator-active-tab';
 const state = { values:{}, locks:{}, bags:{} };
+const sentenceState = { values:{}, bags:{}, text:'' };
+const SENTENCE_ACTIONS = ["並べる","埋める","積む","磨く","洗う","乾かす","測る","数える","包む","運ぶ","引っ張る","押す","回す","転がす","吊るす","沈める","浮かべる","冷やす","温める","凍らせる","解凍する","折りたたむ","広げる","縛る","ほどく","隠す","探す","修理する","組み立てる","分解する","飾る","片付ける","見張る","追いかける","撮影する","観察する","検品する","包装する"];
+const SENTENCE_DATA = {"主役":DATA["主役"],"場所":DATA["場所"],"小道具":DATA["小道具"],"行動":SENTENCE_ACTIONS,"結果":DATA["結果"]};
+const SENTENCE_KEYS = Object.keys(SENTENCE_DATA);
 
 function unique(arr){ return [...new Set(arr.map(v=>String(v).trim()).filter(Boolean))]; }
 for (const k of KEYS) DATA[k] = unique(DATA[k]);
-
-function shuffle(a){
-  const x=[...a];
-  for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}
-  return x;
-}
-function load(){
-  try{
-    const s=JSON.parse(localStorage.getItem(STORAGE)||'{}');
-    state.bags=s.bags||{};
-    state.values=s.values||{};
-    state.locks=s.locks||{};
-  }catch(e){}
-}
-function save(){ localStorage.setItem(STORAGE, JSON.stringify(state)); }
-function refill(key){
-  const last=state.values[key];
-  let bag=shuffle(DATA[key]);
-  if(last && bag.length>1 && bag[bag.length-1]===last){
-    const i=Math.floor(Math.random()*(bag.length-1));
-    [bag[i],bag[bag.length-1]]=[bag[bag.length-1],bag[i]];
-  }
-  state.bags[key]=bag;
-}
-function draw(key, forbidden=new Set()){
-  if(!Array.isArray(state.bags[key]) || state.bags[key].length===0) refill(key);
-  let idx=-1;
-  for(let i=state.bags[key].length-1;i>=0;i--){
-    const candidate=state.bags[key][i];
-    if(candidate!==state.values[key] && !forbidden.has(candidate)){ idx=i; break; }
-  }
-  if(idx<0){
-    if(state.bags[key].length===0) refill(key);
-    idx=state.bags[key].length-1;
-  }
-  const [next]=state.bags[key].splice(idx,1);
-  state.values[key]=next;
-  save();
-  return next;
-}
-function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function render(){
-  const grid=document.getElementById('grid');
-  grid.innerHTML='';
-  const used=new Set(Object.values(state.values).filter(Boolean));
-  KEYS.forEach((key,i)=>{
-    if(!state.values[key]){
-      state.values[key]=draw(key,used);
-      used.add(state.values[key]);
-    }
-    const card=document.createElement('section'); card.className='card';
-    card.innerHTML=`
-      <div>
-        <div class="cardhead"><span class="num">${String(i+1).padStart(2,'0')}</span><span>${esc(key)}</span></div>
-        <div class="value" id="value-${i}">${esc(state.values[key])}</div>
-      </div>
-      <div class="actions">
-        <button class="${state.locks[key]?'locked':''}" data-lock="${i}">${state.locks[key]?'● 固定中':'○ 固定'}</button>
-        <button data-reroll="${i}">↻ 引き直す</button>
-      </div>`;
-    grid.appendChild(card);
-  });
-}
-function rerollOne(i){
-  const key=KEYS[i];
-  const used=new Set(KEYS.filter(k=>k!==key).map(k=>state.values[k]).filter(Boolean));
-  draw(key,used);
-  render();
-}
-function rerollAll(){
-  const used=new Set(KEYS.filter(k=>state.locks[k]).map(k=>state.values[k]).filter(Boolean));
-  KEYS.forEach(k=>{
-    if(!state.locks[k]){
-      draw(k,used);
-      used.add(state.values[k]);
-    }
-  });
-  render();
-}
-function resultText(){ return KEYS.map(k=>`${k}：${state.values[k]}`).join('\n'); }
+for (const k of SENTENCE_KEYS) SENTENCE_DATA[k] = unique(SENTENCE_DATA[k]);
+function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;}
+function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE)||'{}');state.bags=s.bags||{};state.values=s.values||{};state.locks=s.locks||{};}catch(e){}try{const s=JSON.parse(localStorage.getItem(SENTENCE_STORAGE)||'{}');sentenceState.bags=s.bags||{};sentenceState.values=s.values||{};sentenceState.text=s.text||'';}catch(e){}}
+function save(){localStorage.setItem(STORAGE,JSON.stringify(state));}
+function saveSentence(){localStorage.setItem(SENTENCE_STORAGE,JSON.stringify(sentenceState));}
+function refill(key){const last=state.values[key];let bag=shuffle(DATA[key]);if(last&&bag.length>1&&bag[bag.length-1]===last){const i=Math.floor(Math.random()*(bag.length-1));[bag[i],bag[bag.length-1]]=[bag[bag.length-1],bag[i]];}state.bags[key]=bag;}
+function draw(key,forbidden=new Set()){if(!Array.isArray(state.bags[key])||state.bags[key].length===0)refill(key);let idx=-1;for(let i=state.bags[key].length-1;i>=0;i--){const c=state.bags[key][i];if(c!==state.values[key]&&!forbidden.has(c)){idx=i;break;}}if(idx<0)idx=state.bags[key].length-1;const [next]=state.bags[key].splice(idx,1);state.values[key]=next;save();return next;}
+function sentenceRefill(key){const last=sentenceState.values[key];let bag=shuffle(SENTENCE_DATA[key]);if(last&&bag.length>1&&bag[bag.length-1]===last){const i=Math.floor(Math.random()*(bag.length-1));[bag[i],bag[bag.length-1]]=[bag[bag.length-1],bag[i]];}sentenceState.bags[key]=bag;}
+function sentenceDraw(key){if(!Array.isArray(sentenceState.bags[key])||sentenceState.bags[key].length===0)sentenceRefill(key);let idx=sentenceState.bags[key].length-1;if(sentenceState.bags[key][idx]===sentenceState.values[key]&&sentenceState.bags[key].length>1)idx--;const [next]=sentenceState.bags[key].splice(idx,1);sentenceState.values[key]=next;return next;}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function render(){const grid=document.getElementById('grid');grid.innerHTML='';const used=new Set(Object.values(state.values).filter(Boolean));KEYS.forEach((key,i)=>{if(!state.values[key]){state.values[key]=draw(key,used);used.add(state.values[key]);}const card=document.createElement('section');card.className='card';card.innerHTML=`<div><div class="cardhead"><span class="num">${String(i+1).padStart(2,'0')}</span><span>${esc(key)}</span></div><div class="value">${esc(state.values[key])}</div></div><div class="actions"><button class="${state.locks[key]?'locked':''}" data-lock="${i}">${state.locks[key]?'● 固定中':'○ 固定'}</button><button data-reroll="${i}">↻ 引き直す</button></div>`;grid.appendChild(card);});}
+function rerollOne(i){const key=KEYS[i];const used=new Set(KEYS.filter(k=>k!==key).map(k=>state.values[k]).filter(Boolean));draw(key,used);render();}
+function rerollAll(){const used=new Set(KEYS.filter(k=>state.locks[k]).map(k=>state.values[k]).filter(Boolean));KEYS.forEach(k=>{if(!state.locks[k]){draw(k,used);used.add(state.values[k]);}});render();}
+function resultText(){return KEYS.map(k=>`${k}：${state.values[k]}`).join('\n');}
+function makeSentence(){SENTENCE_KEYS.forEach(k=>sentenceDraw(k));const v=sentenceState.values;const patterns=[`${v.主役}が${v.場所}で${v.小道具}を${v.行動}。${v.結果}。`,`${v.場所}で、${v.主役}が${v.小道具}を${v.行動}。${v.結果}。`,`${v.主役}は${v.場所}で${v.小道具}を${v.行動}。${v.結果}。`];sentenceState.text=patterns[Math.floor(Math.random()*patterns.length)];saveSentence();renderSentence();}
+function renderSentence(){if(!sentenceState.text)makeSentence();document.getElementById('sentenceText').textContent=sentenceState.text;document.getElementById('sentenceParts').textContent=SENTENCE_KEYS.map(k=>`${k}：${sentenceState.values[k]}`).join(' / ');}
 function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1300)}
+function setTab(name){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));document.getElementById('netaPanel').classList.toggle('active',name==='neta');document.getElementById('sentencePanel').classList.toggle('active',name==='sentence');localStorage.setItem(TAB_STORAGE,name);}
 
-document.addEventListener('click',async e=>{
-  const l=e.target.closest('[data-lock]');
-  if(l){const k=KEYS[+l.dataset.lock];state.locks[k]=!state.locks[k];save();render();return;}
-  const r=e.target.closest('[data-reroll]');
-  if(r){rerollOne(+r.dataset.reroll);return;}
-});
+document.addEventListener('click',e=>{const tab=e.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab);return;}const l=e.target.closest('[data-lock]');if(l){const k=KEYS[+l.dataset.lock];state.locks[k]=!state.locks[k];save();render();return;}const r=e.target.closest('[data-reroll]');if(r){rerollOne(+r.dataset.reroll);return;}});
 document.getElementById('rerollAll').onclick=rerollAll;
-document.getElementById('copyAll').onclick=async()=>{
-  try{await navigator.clipboard.writeText(resultText());toast('コピーしました');}
-  catch{toast('コピーできませんでした');}
-};
-document.getElementById('resetHistory').onclick=()=>{
-  if(!confirm('抽選履歴と固定状態をリセットしますか？')) return;
-  localStorage.removeItem(STORAGE); state.values={};state.locks={};state.bags={};render();toast('履歴をリセットしました');
-};
-load();render();
+document.getElementById('copyAll').onclick=async()=>{try{await navigator.clipboard.writeText(resultText());toast('コピーしました')}catch{toast('コピーできませんでした')}};
+document.getElementById('resetHistory').onclick=()=>{if(!confirm('抽選履歴と固定状態をリセットしますか？'))return;localStorage.removeItem(STORAGE);state.values={};state.locks={};state.bags={};render();toast('履歴をリセットしました')};
+document.getElementById('makeSentence').onclick=makeSentence;
+document.getElementById('copySentence').onclick=async()=>{try{await navigator.clipboard.writeText(sentenceState.text);toast('文章をコピーしました')}catch{toast('コピーできませんでした')}};
+document.getElementById('resetSentence').onclick=()=>{if(!confirm('文章の抽選履歴をリセットしますか？'))return;localStorage.removeItem(SENTENCE_STORAGE);sentenceState.values={};sentenceState.bags={};sentenceState.text='';makeSentence();toast('文章履歴をリセットしました')};
+load();render();renderSentence();setTab(localStorage.getItem(TAB_STORAGE)==='sentence'?'sentence':'neta');
 </script>
 </body>
 </html>
