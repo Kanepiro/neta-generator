@@ -6,38 +6,221 @@
 <title>ネタジェネレーター</title>
 <meta name="theme-color" content="#11140d" />
 <style>
-:root{--bg:#11140d;--panel:#171b12;--line:#353b2b;--text:#f2f0e8;--muted:#a9aa9f;--lime:#b7ff1f;--lime2:#d5ff76}
-*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}body{min-height:100vh}.wrap{max-width:980px;margin:0 auto;padding:18px 18px 56px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 20px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:12px;font-weight:800}.logo{width:48px;height:48px;background:var(--lime);color:#11140d;display:grid;place-items:center;font-size:28px;font-weight:1000;transform:rotate(-5deg)}.badge{font-size:12px;letter-spacing:.14em;color:#d7d7ce;margin-top:42px}.hero{padding:12px 0 28px;border-bottom:1px solid var(--line)}.hero h1{font-size:clamp(52px,11vw,112px);line-height:.86;margin:20px 0 24px;letter-spacing:-.08em;max-width:800px}.hero h1 span{color:var(--lime)}.hero p{color:#c8c8bd;font-size:18px;line-height:1.7;margin:0;max-width:660px}.status{display:flex;align-items:center;gap:10px;color:#d6d7cc;margin:26px 0 16px;font-size:18px}.dot{width:12px;height:12px;border-radius:50%;background:var(--lime);box-shadow:0 0 18px rgba(183,255,31,.35)}.status b{color:var(--lime);font-size:30px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}.card{min-height:280px;padding:24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,.008)}.cardhead{display:flex;align-items:center;gap:10px;color:#d1d2c8;font-weight:800}.num{color:var(--lime);font-size:13px;letter-spacing:.08em}.value{font-size:clamp(42px,7vw,78px);font-weight:900;line-height:1.05;letter-spacing:-.04em;padding:18px 0 26px;word-break:keep-all}.actions{display:flex;gap:10px;flex-wrap:wrap}button{appearance:none;border:1px solid #414838;background:#15180f;color:var(--text);padding:13px 18px;font:inherit;font-weight:800;cursor:pointer;min-height:48px}button:hover{border-color:var(--lime);color:var(--lime)}button.locked{background:var(--lime);color:#10130b;border-color:var(--lime)}.controls{display:flex;gap:12px;flex-wrap:wrap;padding:24px 0}.primary{background:var(--lime);color:#11140d;border-color:var(--lime);font-size:18px;padding:15px 22px}.primary:hover{color:#11140d;filter:brightness(1.05)}.small{color:#b9b9af}.note{color:var(--muted);font-size:13px;line-height:1.7;border-top:1px solid var(--line);padding-top:20px}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#edf8d4;color:#12150d;padding:12px 18px;font-weight:900;opacity:0;pointer-events:none;transition:.2s;z-index:10}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(max-width:680px){.wrap{padding:14px 14px 42px}.topbar{padding-bottom:14px}.logo{width:42px;height:42px;font-size:24px}.hero h1{font-size:64px}.hero p{font-size:16px}.grid{grid-template-columns:1fr}.card{min-height:230px;padding:20px}.value{font-size:54px}}
+:root{
+  --bg:#11140d;--panel:#171b12;--line:#353b2b;--text:#f2f0e8;--muted:#a9aa9f;--lime:#b7ff1f;--lime2:#d5ff76;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+body{min-height:100vh}
+.wrap{max-width:980px;margin:0 auto;padding:18px 18px 56px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 20px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800}
+.logo{width:48px;height:48px;background:var(--lime);color:#11140d;display:grid;place-items:center;font-size:28px;font-weight:1000;transform:rotate(-5deg)}
+.badge{font-size:12px;letter-spacing:.14em;color:#d7d7ce;margin-top:42px}
+.hero{padding:12px 0 28px;border-bottom:1px solid var(--line)}
+.hero h1{font-size:clamp(52px,11vw,112px);line-height:.86;margin:20px 0 24px;letter-spacing:-.08em;max-width:800px}
+.hero h1 span{color:var(--lime)}
+.hero p{color:#c8c8bd;font-size:18px;line-height:1.7;margin:0;max-width:660px}
+.status{display:flex;align-items:center;gap:10px;color:#d6d7cc;margin:26px 0 16px;font-size:18px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--lime);box-shadow:0 0 18px rgba(183,255,31,.35)}
+.status b{color:var(--lime);font-size:30px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.card{min-height:280px;padding:24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between;background:rgba(255,255,255,.008)}
+.cardhead{display:flex;align-items:center;gap:10px;color:#d1d2c8;font-weight:800}
+.num{color:var(--lime);font-size:13px;letter-spacing:.08em}
+.value{font-size:clamp(42px,7vw,78px);font-weight:900;line-height:1.05;letter-spacing:-.04em;padding:18px 0 26px;word-break:keep-all}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+button{appearance:none;border:1px solid #414838;background:#15180f;color:var(--text);padding:13px 18px;font:inherit;font-weight:800;cursor:pointer;min-height:48px}
+button:hover{border-color:var(--lime);color:var(--lime)}
+button.locked{background:var(--lime);color:#10130b;border-color:var(--lime)}
+.controls{display:flex;gap:12px;flex-wrap:wrap;padding:24px 0}
+.primary{background:var(--lime);color:#11140d;border-color:var(--lime);font-size:18px;padding:15px 22px}
+.primary:hover{color:#11140d;filter:brightness(1.05)}
+.small{color:#b9b9af}
+.note{color:var(--muted);font-size:13px;line-height:1.7;border-top:1px solid var(--line);padding-top:20px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#edf8d4;color:#12150d;padding:12px 18px;font-weight:900;opacity:0;pointer-events:none;transition:.2s;z-index:10}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:680px){
+  .wrap{padding:14px 14px 42px}.topbar{padding-bottom:14px}.logo{width:42px;height:42px;font-size:24px}
+  .hero h1{font-size:64px}.hero p{font-size:16px}.grid{grid-template-columns:1fr}.card{min-height:230px;padding:20px}.value{font-size:54px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="topbar"><div class="brand"><div class="logo">ネ</div><div>ネタジェネレーター</div></div><div class="small">PURE RANDOM</div></header>
-<section class="hero"><div class="badge">● TREND-FREE / PURE RANDOM</div><h1>無関係を、<br><span>ぶつけろ。</span></h1><p>流行データも、おすすめ補正もなし。<br>6つの材料を独立して引くだけ。</p></section>
-<div class="status"><span class="dot"></span><span><b>6</b> カテゴリを抽選しています</span></div><main class="grid" id="grid"></main>
-<div class="controls"><button class="primary" id="rerollAll">全部引き直す</button><button id="copyAll">結果をコピー</button><button id="resetHistory">抽選履歴をリセット</button></div>
-<div class="note">同じカテゴリでは、登録語を一巡するまで同じ言葉は再登場しません。<br>抽選履歴はこの端末のブラウザ内にだけ保存されます。外部API・AI API・有料サービスは使用しません。</div>
-</div><div class="toast" id="toast">コピーしました</div>
+  <header class="topbar">
+    <div class="brand"><div class="logo">ネ</div><div>ネタジェネレーター</div></div>
+    <div class="small">PURE RANDOM</div>
+  </header>
+
+  <section class="hero">
+    <div class="badge">● TREND-FREE / PURE RANDOM</div>
+    <h1>無関係を、<br><span>ぶつけろ。</span></h1>
+    <p>流行データも、おすすめ補正もなし。<br>6つの材料を独立して引くだけ。</p>
+  </section>
+
+  <div class="status"><span class="dot"></span><span><b>6</b> カテゴリを抽選しています</span></div>
+  <main class="grid" id="grid"></main>
+
+  <div class="controls">
+    <button class="primary" id="rerollAll">全部引き直す</button>
+    <button id="copyAll">結果をコピー</button>
+    <button id="resetHistory">抽選履歴をリセット</button>
+  </div>
+  <div class="note">
+    同じカテゴリでは、登録語を一巡するまで同じ言葉は再登場しません。6枠の中でも同じ言葉は重複しません。<br>
+    抽選履歴はこの端末のブラウザ内にだけ保存されます。外部API・AI API・有料サービスは使用しません。
+  </div>
+</div>
+<div class="toast" id="toast">コピーしました</div>
 <script>
-const DATA={
-"主役":["店長","新人","社長","警備員","配達員","美容師","農家","僧侶","探偵","教師","料理人","整備士","研究員","受付係","審判","司会者","船長","駅員","飼育員","大工","おばあちゃん","おじいちゃん","会社員","高校生","大学生","観光客","隣人","大家","客","店員","猫","柴犬","ハムスター","カラス","鳩","ペンギン","アルパカ","カピバラ","ヤギ","ニワトリ","ロボット","宇宙人","忍者","侍","魔法使い","勇者","王様","幽霊","雪だるま","マネキン","ぬいぐるみ","石像","恐竜","エルフ","ドワーフ","天使","悪魔","河童","埴輪","案山子","掃除機","冷蔵庫","扇風機","信号機","自販機","炊飯器","目覚まし時計","電子レンジ","プリンター","コピー機","ドローン","スピーカー","植木鉢","こたつ","ソファ","ピアノ","冷凍庫","洗濯機","本棚","郵便ポスト"],
-"場所":["田んぼ","屋上","駐車場","商店街","砂浜","公園","体育館","教室","会議室","倉庫","厨房","銭湯","ホテル","旅館","コンビニ","スーパー","ホームセンター","図書館","映画館","美術館","水族館","動物園","遊園地","キャンプ場","河川敷","港","漁港","山頂","森","竹林","雪原","温室","牧場","畑","庭","地下室","屋根裏","廊下","階段","エレベーター","駅前","バス停","空港ロビー","サービスエリア","フードコート","喫茶店","ラーメン屋","寿司屋","居酒屋","パン屋","花屋","美容室","クリーニング店","コインランドリー","病院の待合室","市役所ロビー","工場","研究室","撮影スタジオ","ライブハウス","神社","寺","墓地","城跡","展望台","洞窟","堤防","地下道","歩道橋","屋台","ゲームセンター","カラオケ店","ボウリング場","スケートリンク","プールサイド","野球場","サッカー場","ゴルフ場","結婚式場","空き地"],
-"小道具":["トロフィー","こたつ","巨大スプーン","脚立","ホース","ヘルメット","鍋","フライパン","炊飯器","傘","長靴","段ボール","バケツ","スコップ","ほうき","モップ","台車","買い物カゴ","拡声器","双眼鏡","虫取り網","釣り竿","浮き輪","ビーチボール","座布団","枕","布団","毛布","鏡","扇子","風船","縄跳び","フラフープ","メジャー","体重計","目覚まし時計","砂時計","電卓","リモコン","キーボード","マウス","スマホ","タブレット","カメラ","三脚","マイク","スピーカー","ヘッドホン","掃除機","扇風機","ドライヤー","トースター","電子レンジ","冷蔵庫","洗濯機","アイロン","ホットプレート","電気ケトル","加湿器","空気清浄機","ぬいぐるみ","マネキン","観葉植物","盆栽","植木鉢","花束","大根","スイカ","食パン","プリン","ゼリー","おにぎり","ケーキ","ラーメン","たこ焼き","ランドセル","スーツケース","郵便ポスト","カラーコーン","将棋盤"],
-"行動":["並べる","埋める","積む","磨く","洗う","乾かす","測る","数える","包む","運ぶ","引っ張る","押す","回す","転がす","吊るす","沈める","浮かべる","冷やす","温める","凍らせる","解凍する","折りたたむ","広げる","縛る","ほどく","隠す","探す","交換する","修理する","組み立てる","分解する","飾る","片付ける","整列させる","見張る","追いかける","逃げる","待つ","見送る","迎える","拝む","謝る","拍手する","お辞儀する","乾杯する","相談する","説教する","実況する","採点する","面接する","注文する","配達する","掃除する","料理する","撮影する","録音する","観察する","実験する","練習する","検品する","包装する","値札を付ける","交換日記を書く","抽選する","スタンプを押す","シールを貼る","ラベルを剥がす","穴を掘る","土を戻す","水をかける","風を当てる","光を当てる","影を追う","匂いを嗅ぐ","耳を澄ます","順番を待つ","一斉に止まる","逆向きに進む","同じ場所を往復する","無言で続ける"],
-"状態":["無表情で","全員真剣に","異様に丁寧に","早送りで","超スローで","無言で","拍手されながら","見物人ゼロで","雨の中で","強風の中で","猛暑の昼に","真冬の朝に","夜明け前に","閉店直前に","開店直後に","休憩時間に","誰にも頼まれていないのに","順番を守って","一列になって","同じ制服で","白手袋をして","ヘルメット姿で","正装で","パジャマ姿で","靴だけ新品で","顔だけ真剣で","やたら慎重に","ものすごく急いで","妙にゆっくり","一定のリズムで","一人ずつ","全員同時に","交代しながら","何度も確認しながら","時計を気にしながら","周囲を警戒しながら","満足そうに","不安そうに","退屈そうに","誇らしげに","完全に日常のように","儀式のように","工事のように","競技のように","接客のように","授業のように","研究発表のように","通販番組のように","ニュース中継のように","健康診断のように","卒業式のように","朝礼のように","避難訓練のように","表彰式のように","オーディションのように","検査のように","点検のように","清掃当番のように","町内会のように","部活動のように","一切説明せず","理由を聞かれても答えず","途中で止めず","最後まで淡々と","必要以上に正確に","無駄に協力して","誰も笑わず","誰も驚かず","当然の仕事として","カメラ目線なしで","BGMなしで","掛け声だけで","メモを取りながら","番号札を持って","列を崩さず","足元だけ慎重に","周囲だけ豪華に","対象だけ古びて","全員新品の道具で","終了後すぐ帰る"],
-"結果":["最後に地面だけ平らになる","最後に元の位置へ戻す","最後に全員帰る","最後に一人だけ残る","最後に拍手が起きる","最後に誰も見ていない","最後に値札だけ残る","最後に説明板を立てる","最後に写真だけ撮る","最後に記念撮影する","最後に何も起きない","最後に同じ作業を最初から始める","最後に担当者が交代する","最後に対象だけ消える","最後に別の物が出てくる","最後に蓋を閉める","最後に鍵をかける","最後にシートを被せる","最後にロープを張る","最後に番号札を置く","最後に清掃して終了","最後に土だけならす","最後に水を撒く","最後に照明を消す","最後にシャッターを閉める","最後にタイムを計る","最後に採点する","最後に合格札を出す","最後に不合格札を出す","最後に返品する","最後にレシートを渡す","最後にハンコを押す","最後に列が解散する","最後に全員お辞儀する","最後に全員無言で去る","最後に一人が首をかしげる","最後に係員が確認する","最後にチェック表へ丸を付ける","最後にテープを貼る","最後に看板を裏返す","最後に対象を布で隠す","最後に箱へ戻す","最後に持ち帰る","最後に置き去りにする","最後に別の場所へ運ぶ","最後に倉庫へしまう","最後に展示する","最後に販売開始する","最後に閉店する","最後に営業再開する","最後に時計だけ映す","最後に空の場所だけ映す","最後に同じ構図へ戻る","最後に全員うなずく","最後に一人だけ拍手する","最後に何事もなく日常へ戻る","最後に次の対象物が運ばれてくる","最後に作業道具だけ片付ける","最後に完成品を見つめる","最後に完成品を誰も見ない","最後にカメラが固定されたまま終わる","最後に風だけ吹く","最後に鳥が横切る","最後に猫が通り過ぎる","最後にチャイムが鳴る","最後にタイマーが止まる","最後に電源を切る","最後に明かりだけ残る","最後に床だけ綺麗になる","最後に開始前より整っている","最後に開始前と全く同じになる","最後に対象の名前札だけ置く","最後に作業員がガッツポーズする","最後に責任者が検品する","最後に誰かが忘れ物を取りに戻る","最後に別チームが到着する","最後に列だけ残る","最後に柵だけ残る","最後に空箱だけ残る","最後に終了札を出す"]};
-const KEYS=Object.keys(DATA),STORAGE='neta-generator-v2-bags',state={values:{},locks:{},bags:{}};
-function unique(arr){return[...new Set(arr.map(v=>String(v).trim()).filter(Boolean))]}for(const k of KEYS)DATA[k]=unique(DATA[k]);
-function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
-function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE)||'{}');state.bags=s.bags||{};state.values=s.values||{};state.locks=s.locks||{}}catch(e){}}
-function save(){localStorage.setItem(STORAGE,JSON.stringify(state))}
-function refill(key){const last=state.values[key];let bag=shuffle(DATA[key]);if(last&&bag.length>1&&bag[bag.length-1]===last){const i=Math.floor(Math.random()*(bag.length-1));[bag[i],bag[bag.length-1]]=[bag[bag.length-1],bag[i]]}state.bags[key]=bag}
-function draw(key){if(!Array.isArray(state.bags[key])||state.bags[key].length===0)refill(key);let next=state.bags[key].pop();if(next===state.values[key]&&DATA[key].length>1){if(state.bags[key].length===0)refill(key);const alt=state.bags[key].pop();state.bags[key].push(next);next=alt}state.values[key]=next;save();return next}
-function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function render(){const grid=document.getElementById('grid');grid.innerHTML='';KEYS.forEach((key,i)=>{if(!state.values[key])draw(key);const card=document.createElement('section');card.className='card';card.innerHTML=`<div><div class="cardhead"><span class="num">${String(i+1).padStart(2,'0')}</span><span>${esc(key)}</span></div><div class="value" id="value-${i}">${esc(state.values[key])}</div></div><div class="actions"><button class="${state.locks[key]?'locked':''}" data-lock="${i}">${state.locks[key]?'● 固定中':'○ 固定'}</button><button data-reroll="${i}">↻ 引き直す</button></div>`;grid.appendChild(card)})}
-function rerollOne(i){const key=KEYS[i];draw(key);render()}function rerollAll(){KEYS.forEach(k=>{if(!state.locks[k])draw(k)});render()}function resultText(){return KEYS.map(k=>`${k}：${state.values[k]}`).join('\n')}function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1300)}
-document.addEventListener('click',e=>{const l=e.target.closest('[data-lock]');if(l){const k=KEYS[+l.dataset.lock];state.locks[k]=!state.locks[k];save();render();return}const r=e.target.closest('[data-reroll]');if(r){rerollOne(+r.dataset.reroll)}});
-document.getElementById('rerollAll').onclick=rerollAll;document.getElementById('copyAll').onclick=async()=>{try{await navigator.clipboard.writeText(resultText());toast('コピーしました')}catch{toast('コピーできませんでした')}};document.getElementById('resetHistory').onclick=()=>{if(!confirm('抽選履歴と固定状態をリセットしますか？'))return;localStorage.removeItem(STORAGE);state.values={};state.locks={};state.bags={};render();toast('履歴をリセットしました')};load();render();
+const DATA = {
+  "主役": [
+    "店長","新人","社長","警備員","配達員","美容師","農家","僧侶","探偵","教師","料理人","整備士","研究員","受付係","審判","司会者","船長","駅員","飼育員","大工",
+    "おばあちゃん","おじいちゃん","会社員","高校生","大学生","観光客","隣人","大家","客","店員","猫","柴犬","ハムスター","カラス","鳩","ペンギン","アルパカ","カピバラ","ヤギ","ニワトリ",
+    "ロボット","宇宙人","忍者","侍","魔法使い","勇者","王様","幽霊","雪だるま","マネキン","ぬいぐるみ","石像","恐竜","エルフ","ドワーフ","天使","悪魔","河童","埴輪","案山子",
+    "掃除機","冷蔵庫","扇風機","信号機","自販機","炊飯器","目覚まし時計","電子レンジ","プリンター","コピー機","ドローン","スピーカー","植木鉢","こたつ","ソファ","ピアノ","冷凍庫","洗濯機","本棚","郵便ポスト"
+  ],
+  "場所": [
+    "田んぼ","屋上","駐車場","商店街","砂浜","公園","体育館","教室","会議室","倉庫","厨房","銭湯","ホテル","旅館","コンビニ","スーパー","ホームセンター","図書館","映画館","美術館",
+    "水族館","動物園","遊園地","キャンプ場","河川敷","港","漁港","山頂","森","竹林","雪原","温室","牧場","畑","庭","地下室","屋根裏","廊下","階段","エレベーター",
+    "駅前","バス停","空港ロビー","サービスエリア","フードコート","喫茶店","ラーメン屋","寿司屋","居酒屋","パン屋","花屋","美容室","クリーニング店","コインランドリー","病院の待合室","市役所ロビー","工場","研究室","撮影スタジオ","ライブハウス",
+    "神社","寺","墓地","城跡","展望台","洞窟","堤防","地下道","歩道橋","屋台","ゲームセンター","カラオケ店","ボウリング場","スケートリンク","プールサイド","野球場","サッカー場","ゴルフ場","結婚式場","空き地"
+  ],
+  "小道具": [
+    "トロフィー","こたつ","巨大スプーン","脚立","ホース","ヘルメット","鍋","フライパン","炊飯器","傘","長靴","段ボール","バケツ","スコップ","ほうき","モップ","台車","買い物カゴ","拡声器","双眼鏡",
+    "虫取り網","釣り竿","浮き輪","ビーチボール","座布団","枕","布団","毛布","鏡","扇子","風船","縄跳び","フラフープ","メジャー","体重計","目覚まし時計","砂時計","電卓","リモコン","キーボード",
+    "マウス","スマホ","タブレット","カメラ","三脚","マイク","スピーカー","ヘッドホン","掃除機","扇風機","ドライヤー","トースター","電子レンジ","冷蔵庫","洗濯機","アイロン","ホットプレート","電気ケトル","加湿器","空気清浄機",
+    "ぬいぐるみ","マネキン","観葉植物","盆栽","植木鉢","花束","大根","スイカ","食パン","プリン","ゼリー","おにぎり","ケーキ","ラーメン","たこ焼き","ランドセル","スーツケース","郵便ポスト","カラーコーン","将棋盤"
+  ],
+  "行動": [
+    "並べる","埋める","積む","磨く","洗う","乾かす","測る","数える","包む","運ぶ","引っ張る","押す","回す","転がす","吊るす","沈める","浮かべる","冷やす","温める","凍らせる",
+    "解凍する","折りたたむ","広げる","縛る","ほどく","隠す","探す","交換する","修理する","組み立てる","分解する","飾る","片付ける","整列させる","見張る","追いかける","逃げる","待つ","見送る","迎える",
+    "拝む","謝る","拍手する","お辞儀する","乾杯する","相談する","説教する","実況する","採点する","面接する","注文する","配達する","掃除する","料理する","撮影する","録音する","観察する","実験する","練習する","検品する",
+    "包装する","値札を付ける","交換日記を書く","抽選する","スタンプを押す","シールを貼る","ラベルを剥がす","穴を掘る","土を戻す","水をかける","風を当てる","光を当てる","影を追う","匂いを嗅ぐ","耳を澄ます","順番を待つ","一斉に止まる","逆向きに進む","同じ場所を往復する","無言で続ける"
+  ],
+  "状態": [
+    "無表情で","全員真剣に","異様に丁寧に","早送りで","超スローで","無言で","拍手されながら","見物人ゼロで","雨の中で","強風の中で","猛暑の昼に","真冬の朝に","夜明け前に","閉店直前に","開店直後に","休憩時間に","誰にも頼まれていないのに","順番を守って","一列になって","同じ制服で",
+    "白手袋をして","ヘルメット姿で","正装で","パジャマ姿で","靴だけ新品で","顔だけ真剣で","やたら慎重に","ものすごく急いで","妙にゆっくり","一定のリズムで","一人ずつ","全員同時に","交代しながら","何度も確認しながら","時計を気にしながら","周囲を警戒しながら","満足そうに","不安そうに","退屈そうに","誇らしげに",
+    "完全に日常のように","儀式のように","工事のように","競技のように","接客のように","授業のように","研究発表のように","通販番組のように","ニュース中継のように","健康診断のように","卒業式のように","朝礼のように","避難訓練のように","表彰式のように","オーディションのように","検査のように","点検のように","清掃当番のように","町内会のように","部活動のように",
+    "一切説明せず","理由を聞かれても答えず","途中で止めず","最後まで淡々と","必要以上に正確に","無駄に協力して","誰も笑わず","誰も驚かず","当然の仕事として","カメラ目線なしで","BGMなしで","掛け声だけで","メモを取りながら","番号札を持って","列を崩さず","足元だけ慎重に","周囲だけ豪華に","対象だけ古びて","全員新品の道具で","終了後すぐ帰る"
+  ],
+  "結果": [
+    "最後に地面だけ平らになる","最後に元の位置へ戻す","最後に全員帰る","最後に一人だけ残る","最後に拍手が起きる","最後に誰も見ていない","最後に値札だけ残る","最後に説明板を立てる","最後に写真だけ撮る","最後に記念撮影する",
+    "最後に何も起きない","最後に同じ作業を最初から始める","最後に担当者が交代する","最後に対象だけ消える","最後に別の物が出てくる","最後に蓋を閉める","最後に鍵をかける","最後にシートを被せる","最後にロープを張る","最後に番号札を置く",
+    "最後に清掃して終了","最後に土だけならす","最後に水を撒く","最後に照明を消す","最後にシャッターを閉める","最後にタイムを計る","最後に採点する","最後に合格札を出す","最後に不合格札を出す","最後に返品する",
+    "最後にレシートを渡す","最後にハンコを押す","最後に列が解散する","最後に全員お辞儀する","最後に全員無言で去る","最後に一人が首をかしげる","最後に係員が確認する","最後にチェック表へ丸を付ける","最後にテープを貼る","最後に看板を裏返す",
+    "最後に対象を布で隠す","最後に箱へ戻す","最後に持ち帰る","最後に置き去りにする","最後に別の場所へ運ぶ","最後に倉庫へしまう","最後に展示する","最後に販売開始する","最後に閉店する","最後に営業再開する",
+    "最後に時計だけ映す","最後に空の場所だけ映す","最後に同じ構図へ戻る","最後に全員うなずく","最後に一人だけ拍手する","最後に何事もなく日常へ戻る","最後に次の対象物が運ばれてくる","最後に作業道具だけ片付ける","最後に完成品を見つめる","最後に完成品を誰も見ない",
+    "最後にカメラが固定されたまま終わる","最後に風だけ吹く","最後に鳥が横切る","最後に猫が通り過ぎる","最後にチャイムが鳴る","最後にタイマーが止まる","最後に電源を切る","最後に明かりだけ残る","最後に床だけ綺麗になる","最後に開始前より整っている",
+    "最後に開始前と全く同じになる","最後に対象の名前札だけ置く","最後に作業員がガッツポーズする","最後に責任者が検品する","最後に誰かが忘れ物を取りに戻る","最後に別チームが到着する","最後に列だけ残る","最後に柵だけ残る","最後に空箱だけ残る","最後に終了札を出す"
+  ]
+};
+
+const KEYS = Object.keys(DATA);
+const STORAGE = 'neta-generator-v2-bags';
+const state = { values:{}, locks:{}, bags:{} };
+
+function unique(arr){ return [...new Set(arr.map(v=>String(v).trim()).filter(Boolean))]; }
+for (const k of KEYS) DATA[k] = unique(DATA[k]);
+
+function shuffle(a){
+  const x=[...a];
+  for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}
+  return x;
+}
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem(STORAGE)||'{}');
+    state.bags=s.bags||{};
+    state.values=s.values||{};
+    state.locks=s.locks||{};
+  }catch(e){}
+}
+function save(){ localStorage.setItem(STORAGE, JSON.stringify(state)); }
+function refill(key){
+  const last=state.values[key];
+  let bag=shuffle(DATA[key]);
+  if(last && bag.length>1 && bag[bag.length-1]===last){
+    const i=Math.floor(Math.random()*(bag.length-1));
+    [bag[i],bag[bag.length-1]]=[bag[bag.length-1],bag[i]];
+  }
+  state.bags[key]=bag;
+}
+function draw(key, forbidden=new Set()){
+  if(!Array.isArray(state.bags[key]) || state.bags[key].length===0) refill(key);
+  let idx=-1;
+  for(let i=state.bags[key].length-1;i>=0;i--){
+    const candidate=state.bags[key][i];
+    if(candidate!==state.values[key] && !forbidden.has(candidate)){ idx=i; break; }
+  }
+  if(idx<0){
+    if(state.bags[key].length===0) refill(key);
+    idx=state.bags[key].length-1;
+  }
+  const [next]=state.bags[key].splice(idx,1);
+  state.values[key]=next;
+  save();
+  return next;
+}
+function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function render(){
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  const used=new Set(Object.values(state.values).filter(Boolean));
+  KEYS.forEach((key,i)=>{
+    if(!state.values[key]){
+      state.values[key]=draw(key,used);
+      used.add(state.values[key]);
+    }
+    const card=document.createElement('section'); card.className='card';
+    card.innerHTML=`
+      <div>
+        <div class="cardhead"><span class="num">${String(i+1).padStart(2,'0')}</span><span>${esc(key)}</span></div>
+        <div class="value" id="value-${i}">${esc(state.values[key])}</div>
+      </div>
+      <div class="actions">
+        <button class="${state.locks[key]?'locked':''}" data-lock="${i}">${state.locks[key]?'● 固定中':'○ 固定'}</button>
+        <button data-reroll="${i}">↻ 引き直す</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+function rerollOne(i){
+  const key=KEYS[i];
+  const used=new Set(KEYS.filter(k=>k!==key).map(k=>state.values[k]).filter(Boolean));
+  draw(key,used);
+  render();
+}
+function rerollAll(){
+  const used=new Set(KEYS.filter(k=>state.locks[k]).map(k=>state.values[k]).filter(Boolean));
+  KEYS.forEach(k=>{
+    if(!state.locks[k]){
+      draw(k,used);
+      used.add(state.values[k]);
+    }
+  });
+  render();
+}
+function resultText(){ return KEYS.map(k=>`${k}：${state.values[k]}`).join('\n'); }
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1300)}
+
+document.addEventListener('click',async e=>{
+  const l=e.target.closest('[data-lock]');
+  if(l){const k=KEYS[+l.dataset.lock];state.locks[k]=!state.locks[k];save();render();return;}
+  const r=e.target.closest('[data-reroll]');
+  if(r){rerollOne(+r.dataset.reroll);return;}
+});
+document.getElementById('rerollAll').onclick=rerollAll;
+document.getElementById('copyAll').onclick=async()=>{
+  try{await navigator.clipboard.writeText(resultText());toast('コピーしました');}
+  catch{toast('コピーできませんでした');}
+};
+document.getElementById('resetHistory').onclick=()=>{
+  if(!confirm('抽選履歴と固定状態をリセットしますか？')) return;
+  localStorage.removeItem(STORAGE); state.values={};state.locks={};state.bags={};render();toast('履歴をリセットしました');
+};
+load();render();
 </script>
-</body></html>
+</body>
+</html>
