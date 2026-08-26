@@ -5,7 +5,11 @@ import re
 import sqlite3
 import sys
 from collections import defaultdict, deque
+from functools import lru_cache
 from pathlib import Path
+
+from fugashi import Tagger
+from unidic_lite import DICDIR
 
 TARGET = 30000
 JP_RE = re.compile(r"[ぁ-んァ-ヶ一-龯々〆ヵヶ]")
@@ -19,9 +23,29 @@ GENERATED_PHRASE_RE = re.compile(
     r"(?:の近く|の前|の裏|のそば|の中|の入口|の向こう側|を行う|を動かす|の状態|のまま|の最中|が起きる|で終わる|が残る|ことになる|ところで終わる|になる|だけが残る)$"
 )
 
+TAGGER = Tagger(f"-d {DICDIR}")
 
+
+@lru_cache(maxsize=None)
+def contains_proper_noun(value):
+    """Reject proper nouns (person/place/organization names) and unknown tokens."""
+    try:
+        tokens = list(TAGGER(value))
+    except Exception:
+        return True
+    if not tokens:
+        return True
+    for token in tokens:
+        if getattr(token, "is_unk", False):
+            return True
+        if "固有名詞" in str(token.feature):
+            return True
+    return False
+
+
+@lru_cache(maxsize=None)
 def clean_term(value):
-    """Keep one display term only. Reject spaces and phrase-like grammatical constructions."""
+    """Keep one common-noun/general lexical term only; reject phrases and proper nouns."""
     if value is None:
         return None
     s = str(value).strip()
@@ -34,6 +58,8 @@ def clean_term(value):
     if GENERATED_PHRASE_RE.search(s):
         return None
     if PHRASE_PARTICLE_RE.search(s):
+        return None
+    if contains_proper_noun(s):
         return None
     return s
 
@@ -55,7 +81,7 @@ def stable(values, salt):
 
 
 def take_priority(pools, salt, target=TARGET):
-    """Fill from category-specific pools in order; use broader pools only if needed."""
+    """Fill from category-specific common-word pools first; broad common words only as fallback."""
     out = []
     seen = set()
     for tier, pool in enumerate(pools):
@@ -66,7 +92,7 @@ def take_priority(pools, salt, target=TARGET):
             out.append(value)
             if len(out) == target:
                 return out
-    raise RuntimeError(f"{salt}: only {len(out):,} single-word candidates; need {target:,}")
+    raise RuntimeError(f"{salt}: only {len(out):,} common single-word candidates; need {target:,}")
 
 
 def root_synsets(conn, lemmas):
@@ -143,24 +169,7 @@ def merge_unique(*pools):
     return out
 
 
-def geonames_terms(path):
-    """Read Japanese place-name terms from a GeoNames JP dump. One place name = one candidate."""
-    terms = []
-    with Path(path).open('r', encoding='utf-8') as f:
-        for line in f:
-            cols = line.rstrip('\n').split('\t')
-            if len(cols) < 8:
-                continue
-            feature_class = cols[6]
-            if feature_class not in {'A', 'H', 'L', 'P', 'R', 'S', 'T', 'V'}:
-                continue
-            terms.append(cols[1])
-            if len(cols) > 3 and cols[3]:
-                terms.extend(cols[3].split(','))
-    return uniq(terms)
-
-
-def build(db_path, geonames_path):
+def build(db_path):
     conn = sqlite3.connect(str(db_path))
     by_pos = all_words_by_pos(conn)
     nouns = by_pos.get('n', [])
@@ -171,6 +180,11 @@ def build(db_path, geonames_path):
 
     physical = descendants(conn, root_synsets(conn, ['physical_entity']))
     person = descendants(conn, root_synsets(conn, ['person', 'organism', 'animal']))
+    location = descendants(conn, root_synsets(conn, [
+        'location', 'region', 'geographical_area', 'structure', 'facility',
+        'building', 'room', 'area', 'site', 'body_of_water', 'land', 'road',
+        'route', 'path', 'natural_object'
+    ]))
     artifact = descendants(conn, root_synsets(conn, ['artifact', 'instrumentality', 'device', 'container', 'vehicle']))
     natural = descendants(conn, root_synsets(conn, ['natural_object', 'plant', 'food', 'substance']))
     action = descendants(conn, root_synsets(conn, ['act', 'action', 'activity', 'process']))
@@ -179,17 +193,16 @@ def build(db_path, geonames_path):
 
     physical_words = words_for_synsets(conn, physical, {'n'})
     person_words = words_for_synsets(conn, person, {'n'})
+    location_words = words_for_synsets(conn, location, {'n'})
     artifact_words = words_for_synsets(conn, artifact, {'n'})
     natural_words = words_for_synsets(conn, natural, {'n'})
     action_nouns = words_for_synsets(conn, action, {'n'})
     event_nouns = words_for_synsets(conn, event, {'n'})
     state_nouns = words_for_synsets(conn, state, {'n'})
-    place_names = geonames_terms(geonames_path)
 
-    # One box = one existing term. No generated phrases.
-    # Category-specific vocabulary is always consumed before broad fallback vocabulary.
+    # One box = one existing common term. Proper nouns and generated phrases are forbidden.
     actors = take_priority([person_words, physical_words, nouns], 'actor')
-    places = take_priority([place_names], 'place')
+    places = take_priority([location_words, physical_words, nouns], 'place')
     props = take_priority([artifact_words, natural_words, physical_words, nouns], 'prop')
     actions = take_priority([verbs, action_nouns, event_nouns, nouns], 'action')
     states = take_priority([adjectives, adverbs, state_nouns, event_nouns, nouns], 'state')
@@ -209,27 +222,32 @@ def build(db_path, geonames_path):
             raise RuntimeError(f'{key}: invalid candidate count {len(values)} / unique {len(set(values))}')
         bad = [v for v in values if clean_term(v) != v]
         if bad:
-            raise RuntimeError(f'{key}: non-single-term candidates found: {bad[:10]}')
+            raise RuntimeError(f'{key}: invalid single/common-term candidates found: {bad[:10]}')
+        proper = [v for v in values if contains_proper_noun(v)]
+        if proper:
+            raise RuntimeError(f'{key}: proper nouns found: {proper[:10]}')
 
     stats = {
         'target_per_category': TARGET,
         'single_term_only': True,
+        'proper_nouns_allowed': False,
+        'proper_noun_filter': 'UniDic via fugashi; unknown tokens rejected',
         'category_priority': True,
-        'sources': ['Japanese WordNet v1.1', 'GeoNames Japan'],
-        'method': '30,000 existing single terms per category; category-specific pools first; no generated phrases or modifier expansion',
+        'sources': ['Japanese WordNet v1.1'],
+        'method': '30,000 existing common single terms per category; proper nouns and generated phrases forbidden',
         'counts': {k: len(v) for k, v in data.items()},
         'source_pools': {
-            'japanese_words_total_after_single_term_filter': len(every_word),
+            'japanese_words_total_after_filters': len(every_word),
             'nouns': len(nouns),
             'verbs': len(verbs),
             'adjectives': len(adjectives),
             'adverbs': len(adverbs),
             'physical_nouns': len(physical_words),
             'person_or_living_nouns': len(person_words),
+            'location_like_nouns': len(location_words),
             'action_nouns': len(action_nouns),
             'event_nouns': len(event_nouns),
             'state_nouns': len(state_nouns),
-            'geonames_japanese_terms': len(place_names),
         },
     }
     conn.close()
@@ -237,16 +255,22 @@ def build(db_path, geonames_path):
 
 
 def main():
-    if len(sys.argv) != 4:
-        print('usage: build-single-word-candidates.py WNJPN_DB GEONAMES_JP_TSV OUTPUT_JS', file=sys.stderr)
+    # Backward-compatible with the previous workflow for one commit:
+    # old: DB GEONAMES OUTPUT, new: DB OUTPUT. GeoNames is intentionally ignored.
+    if len(sys.argv) == 4:
+        db_path = Path(sys.argv[1])
+        out_path = Path(sys.argv[3])
+    elif len(sys.argv) == 3:
+        db_path = Path(sys.argv[1])
+        out_path = Path(sys.argv[2])
+    else:
+        print('usage: build-single-word-candidates.py WNJPN_DB [OLD_GEONAMES_IGNORED] OUTPUT_JS', file=sys.stderr)
         raise SystemExit(2)
-    db_path = Path(sys.argv[1])
-    geonames_path = Path(sys.argv[2])
-    out_path = Path(sys.argv[3])
-    data, stats = build(db_path, geonames_path)
+
+    data, stats = build(db_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(
-        '/* Generated from Japanese WordNet v1.1 and GeoNames Japan. See license files in data/. */\n'
+        '/* Generated from Japanese WordNet v1.1. Proper nouns and generated phrases are excluded. */\n'
         + 'window.CANDIDATE_DATA='
         + json.dumps(data, ensure_ascii=False, separators=(',', ':'))
         + ';\n',
