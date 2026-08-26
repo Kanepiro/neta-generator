@@ -269,11 +269,35 @@ def main():
 
     data, stats = build(db_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # The large candidate file is also the earliest script loaded by the page.
+    # Use it for one-time history migration and to upgrade the sentence generator's
+    # old 40-action pool after the inline application script has finished loading.
+    runtime_fix = r'''
+;try{
+  const version='common-single-no-proper-v2';
+  const versionKey='neta-generator-data-version';
+  if(localStorage.getItem(versionKey)!==version){
+    localStorage.removeItem('neta-generator-v4-global-no-repeat');
+    localStorage.removeItem('sentence-generator-v3-no-repeat');
+    localStorage.setItem(versionKey,version);
+  }
+}catch(e){}
+window.addEventListener('load',()=>{
+  try{
+    if(typeof SENTENCE_DATA!=='undefined' && typeof DATA!=='undefined' && Array.isArray(DATA['行動']) && DATA['行動'].length===30000){
+      SENTENCE_DATA['行動']=unique(DATA['行動']);
+    }
+  }catch(e){}
+});
+'''
+
     out_path.write_text(
         '/* Generated from Japanese WordNet v1.1. Proper nouns and generated phrases are excluded. */\n'
         + 'window.CANDIDATE_DATA='
         + json.dumps(data, ensure_ascii=False, separators=(',', ':'))
-        + ';\n',
+        + ';\n'
+        + runtime_fix.lstrip(),
         encoding='utf-8',
     )
     (out_path.parent / 'candidate-stats.json').write_text(
