@@ -1,0 +1,63 @@
+name: Build real 30000 candidate pools
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-real-candidates.yml'
+      - 'scripts/build-real-candidates.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Japanese WordNet v1.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 --retry-delay 2 \
+            -o /tmp/wnjpn.db.gz \
+            https://github.com/bond-lab/wnja/releases/download/v1.1/wnjpn.db.gz
+          gzip -dc /tmp/wnjpn.db.gz > /tmp/wnjpn.db
+          test -s /tmp/wnjpn.db
+
+      - name: Build six real candidate pools
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build-real-candidates.py /tmp/wnjpn.db data/candidates.js
+
+      - name: Verify 30000 unique candidates per category
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          stats = json.loads(Path('data/candidate-stats.json').read_text(encoding='utf-8'))
+          expected = {'主役','場所','小道具','行動','状態','結果'}
+          assert set(stats['counts']) == expected, stats['counts']
+          for key, count in stats['counts'].items():
+              assert count == 30000, (key, count)
+          print(stats['counts'])
+          PY
+
+      - name: Commit generated candidate data
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- data/candidates.js data/candidate-stats.json; then
+            echo 'Generated data unchanged.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/candidates.js data/candidate-stats.json
+          git commit -m 'Generate six real 30000-candidate pools'
+          git push
