@@ -163,21 +163,23 @@ const DATA = {
 };
 
 
-if (window.CANDIDATE_DATA) {
-  for (const key of Object.keys(DATA)) {
-    const values = window.CANDIDATE_DATA[key];
-    if (Array.isArray(values) && values.length === 30000) DATA[key] = values;
-  }
+const CANDIDATE_DATA_READY = !!window.CANDIDATE_DATA && Object.keys(DATA).every(key =>
+  Array.isArray(window.CANDIDATE_DATA[key]) && window.CANDIDATE_DATA[key].length === 30000
+);
+if (!CANDIDATE_DATA_READY) {
+  document.body.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:white;background:#11140d;min-height:100vh">候補データの読み込みに失敗しました。ページを再読み込みしてください。</div>';
+  throw new Error('30,000-candidate data failed to load');
 }
+for (const key of Object.keys(DATA)) DATA[key] = window.CANDIDATE_DATA[key];
 
 const KEYS = Object.keys(DATA);
-const STORAGE = 'neta-generator-v4-global-no-repeat';
-const SENTENCE_STORAGE = 'sentence-generator-v3-no-repeat';
+const STORAGE = 'neta-generator-v5-common-single-no-proper';
+const SENTENCE_STORAGE = 'sentence-generator-v4-full-pools';
 const TAB_STORAGE = 'generator-active-tab';
 const state = { values:{}, locks:{}, seen:[] };
 const sentenceState = { values:{}, seen:[], text:'' };
-const SENTENCE_ACTIONS = ["並べる","埋める","積む","磨く","洗う","乾かす","測る","数える","包む","運ぶ","引っ張る","押す","回す","転がす","吊るす","沈める","浮かべる","冷やす","温める","凍らせる","解凍する","折りたたむ","広げる","縛る","ほどく","隠す","探す","修理する","組み立てる","分解する","飾る","片付ける","見張る","追いかける","撮影する","観察する","検品する","包装する"];
-const SENTENCE_DATA = {"主役":DATA["主役"],"場所":DATA["場所"],"小道具":DATA["小道具"],"行動":SENTENCE_ACTIONS,"結果":DATA["結果"]};
+const SENTENCE_ACTIONS = DATA["行動"];
+const SENTENCE_DATA = {"主役":DATA["主役"],"場所":DATA["場所"],"小道具":DATA["小道具"],"行動":DATA["行動"],"結果":DATA["結果"]};
 const SENTENCE_KEYS = Object.keys(SENTENCE_DATA);
 
 function unique(arr){ return [...new Set(arr.map(v=>String(v).trim()).filter(Boolean))]; }
