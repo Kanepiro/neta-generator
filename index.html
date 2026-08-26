@@ -94,7 +94,7 @@ button.locked,.primary{background:var(--lime);color:#11140d;border-color:var(--l
         <button id="copyAll">結果をコピー</button>
         <button id="resetHistory">抽選履歴をリセット</button>
       </div>
-      <div class="note">同じカテゴリでは、登録語を一巡するまで同じ言葉は再登場しません。6枠の中でも同じ言葉は重複しません。<br>抽選履歴はこの端末のブラウザ内にだけ保存されます。外部API・AI API・有料サービスは使用しません。</div>
+      <div class="note">同じカテゴリでは、抽選履歴をリセットするまで一度出た言葉は再登場しません。6枠の中でも同じ言葉は重複しません。<br>抽選履歴はこの端末のブラウザ内にだけ保存されます。外部API・AI API・有料サービスは使用しません。</div>
     </div>
   </section>
 
@@ -162,10 +162,10 @@ const DATA = {
 };
 
 const KEYS = Object.keys(DATA);
-const STORAGE = 'neta-generator-v2-bags';
+const STORAGE = 'neta-generator-v3-no-repeat';
 const SENTENCE_STORAGE = 'sentence-generator-v2-bags';
 const TAB_STORAGE = 'generator-active-tab';
-const state = { values:{}, locks:{}, bags:{} };
+const state = { values:{}, locks:{}, seen:{} };
 const sentenceState = { values:{}, bags:{}, text:'' };
 const SENTENCE_ACTIONS = ["並べる","埋める","積む","磨く","洗う","乾かす","測る","数える","包む","運ぶ","引っ張る","押す","回す","転がす","吊るす","沈める","浮かべる","冷やす","温める","凍らせる","解凍する","折りたたむ","広げる","縛る","ほどく","隠す","探す","修理する","組み立てる","分解する","飾る","片付ける","見張る","追いかける","撮影する","観察する","検品する","包装する"];
 const SENTENCE_DATA = {"主役":DATA["主役"],"場所":DATA["場所"],"小道具":DATA["小道具"],"行動":SENTENCE_ACTIONS,"結果":DATA["結果"]};
@@ -175,17 +175,30 @@ function unique(arr){ return [...new Set(arr.map(v=>String(v).trim()).filter(Boo
 for (const k of KEYS) DATA[k] = unique(DATA[k]);
 for (const k of SENTENCE_KEYS) SENTENCE_DATA[k] = unique(SENTENCE_DATA[k]);
 function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;}
-function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE)||'{}');state.bags=s.bags||{};state.values=s.values||{};state.locks=s.locks||{};}catch(e){}try{const s=JSON.parse(localStorage.getItem(SENTENCE_STORAGE)||'{}');sentenceState.bags=s.bags||{};sentenceState.values=s.values||{};sentenceState.text=s.text||'';}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE)||'{}');state.seen=s.seen||{};state.values=s.values||{};state.locks=s.locks||{};}catch(e){}try{const s=JSON.parse(localStorage.getItem(SENTENCE_STORAGE)||'{}');sentenceState.bags=s.bags||{};sentenceState.values=s.values||{};sentenceState.text=s.text||'';}catch(e){}}
 function save(){localStorage.setItem(STORAGE,JSON.stringify(state));}
 function saveSentence(){localStorage.setItem(SENTENCE_STORAGE,JSON.stringify(sentenceState));}
-function refill(key){const last=state.values[key];let bag=shuffle(DATA[key]);if(last&&bag.length>1&&bag[bag.length-1]===last){const i=Math.floor(Math.random()*(bag.length-1));[bag[i],bag[bag.length-1]]=[bag[bag.length-1],bag[i]];}state.bags[key]=bag;}
-function draw(key,forbidden=new Set()){if(!Array.isArray(state.bags[key])||state.bags[key].length===0)refill(key);let idx=-1;for(let i=state.bags[key].length-1;i>=0;i--){const c=state.bags[key][i];if(c!==state.values[key]&&!forbidden.has(c)){idx=i;break;}}if(idx<0)idx=state.bags[key].length-1;const [next]=state.bags[key].splice(idx,1);state.values[key]=next;save();return next;}
+function draw(key,forbidden=new Set()){
+  if(!Array.isArray(state.seen[key]))state.seen[key]=[];
+  const seen=new Set(state.seen[key]);
+  const candidates=DATA[key].filter(c=>!seen.has(c)&&!forbidden.has(c));
+  if(candidates.length===0){
+    const remaining=DATA[key].filter(c=>!seen.has(c));
+    toast(remaining.length===0?`${key}は全候補を使い切りました`:`${key}は現在の6枠と重複するため引けません`);
+    return null;
+  }
+  const next=candidates[Math.floor(Math.random()*candidates.length)];
+  state.seen[key].push(next);
+  state.values[key]=next;
+  save();
+  return next;
+}
 function sentenceRefill(key){const last=sentenceState.values[key];let bag=shuffle(SENTENCE_DATA[key]);if(last&&bag.length>1&&bag[bag.length-1]===last){const i=Math.floor(Math.random()*(bag.length-1));[bag[i],bag[bag.length-1]]=[bag[bag.length-1],bag[i]];}sentenceState.bags[key]=bag;}
 function sentenceDraw(key){if(!Array.isArray(sentenceState.bags[key])||sentenceState.bags[key].length===0)sentenceRefill(key);let idx=sentenceState.bags[key].length-1;if(sentenceState.bags[key][idx]===sentenceState.values[key]&&sentenceState.bags[key].length>1)idx--;const [next]=sentenceState.bags[key].splice(idx,1);sentenceState.values[key]=next;return next;}
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function render(){const grid=document.getElementById('grid');grid.innerHTML='';const used=new Set(Object.values(state.values).filter(Boolean));KEYS.forEach((key,i)=>{if(!state.values[key]){state.values[key]=draw(key,used);used.add(state.values[key]);}const card=document.createElement('section');card.className='card';card.innerHTML=`<div><div class="cardhead"><span class="num">${String(i+1).padStart(2,'0')}</span><span>${esc(key)}</span></div><div class="value">${esc(state.values[key])}</div></div><div class="actions"><button class="${state.locks[key]?'locked':''}" data-lock="${i}">${state.locks[key]?'● 固定中':'○ 固定'}</button><button data-reroll="${i}">↻ 引き直す</button></div>`;grid.appendChild(card);});}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[m]));}
+function render(){const grid=document.getElementById('grid');grid.innerHTML='';const used=new Set(Object.values(state.values).filter(Boolean));KEYS.forEach((key,i)=>{if(!state.values[key]){const next=draw(key,used);if(next)used.add(next);}const card=document.createElement('section');card.className='card';card.innerHTML=`<div><div class="cardhead"><span class="num">${String(i+1).padStart(2,'0')}</span><span>${esc(key)}</span></div><div class="value">${esc(state.values[key]||'候補なし')}</div></div><div class="actions"><button class="${state.locks[key]?'locked':''}" data-lock="${i}">${state.locks[key]?'● 固定中':'○ 固定'}</button><button data-reroll="${i}">↻ 引き直す</button></div>`;grid.appendChild(card);});}
 function rerollOne(i){const key=KEYS[i];const used=new Set(KEYS.filter(k=>k!==key).map(k=>state.values[k]).filter(Boolean));draw(key,used);render();}
-function rerollAll(){const used=new Set(KEYS.filter(k=>state.locks[k]).map(k=>state.values[k]).filter(Boolean));KEYS.forEach(k=>{if(!state.locks[k]){draw(k,used);used.add(state.values[k]);}});render();}
+function rerollAll(){const used=new Set(KEYS.filter(k=>state.locks[k]).map(k=>state.values[k]).filter(Boolean));KEYS.forEach(k=>{if(!state.locks[k]){const next=draw(k,used);if(next)used.add(next);}});render();}
 function resultText(){return KEYS.map(k=>`${k}：${state.values[k]}`).join('\n');}
 function makeSentence(){SENTENCE_KEYS.forEach(k=>sentenceDraw(k));const v=sentenceState.values;const patterns=[`${v.主役}が${v.場所}で${v.小道具}を${v.行動}。${v.結果}。`,`${v.場所}で、${v.主役}が${v.小道具}を${v.行動}。${v.結果}。`,`${v.主役}は${v.場所}で${v.小道具}を${v.行動}。${v.結果}。`];sentenceState.text=patterns[Math.floor(Math.random()*patterns.length)];saveSentence();renderSentence();}
 function renderSentence(){if(!sentenceState.text)makeSentence();document.getElementById('sentenceText').textContent=sentenceState.text;document.getElementById('sentenceParts').textContent=SENTENCE_KEYS.map(k=>`${k}：${sentenceState.values[k]}`).join(' / ');}
@@ -195,7 +208,7 @@ function setTab(name){document.querySelectorAll('.tab').forEach(b=>b.classList.t
 document.addEventListener('click',e=>{const tab=e.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab);return;}const l=e.target.closest('[data-lock]');if(l){const k=KEYS[+l.dataset.lock];state.locks[k]=!state.locks[k];save();render();return;}const r=e.target.closest('[data-reroll]');if(r){rerollOne(+r.dataset.reroll);return;}});
 document.getElementById('rerollAll').onclick=rerollAll;
 document.getElementById('copyAll').onclick=async()=>{try{await navigator.clipboard.writeText(resultText());toast('コピーしました')}catch{toast('コピーできませんでした')}};
-document.getElementById('resetHistory').onclick=()=>{if(!confirm('抽選履歴と固定状態をリセットしますか？'))return;localStorage.removeItem(STORAGE);state.values={};state.locks={};state.bags={};render();toast('履歴をリセットしました')};
+document.getElementById('resetHistory').onclick=()=>{if(!confirm('抽選履歴と固定状態をリセットしますか？'))return;localStorage.removeItem(STORAGE);state.values={};state.locks={};state.seen={};render();toast('履歴をリセットしました')};
 document.getElementById('makeSentence').onclick=makeSentence;
 document.getElementById('copySentence').onclick=async()=>{try{await navigator.clipboard.writeText(sentenceState.text);toast('文章をコピーしました')}catch{toast('コピーできませんでした')}};
 document.getElementById('resetSentence').onclick=()=>{if(!confirm('文章の抽選履歴をリセットしますか？'))return;localStorage.removeItem(SENTENCE_STORAGE);sentenceState.values={};sentenceState.bags={};sentenceState.text='';makeSentence();toast('文章履歴をリセットしました')};
