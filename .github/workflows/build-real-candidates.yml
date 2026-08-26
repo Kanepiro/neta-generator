@@ -18,6 +18,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Japanese morphology tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet fugashi unidic-lite
+
       - name: Download Japanese WordNet v1.1
         shell: bash
         run: |
@@ -28,23 +34,13 @@ jobs:
           gzip -dc /tmp/wnjpn.db.gz > /tmp/wnjpn.db
           test -s /tmp/wnjpn.db
 
-      - name: Download GeoNames Japan
+      - name: Build six common single-word candidate pools
         shell: bash
         run: |
           set -euo pipefail
-          curl -L --fail --retry 3 --retry-delay 2 \
-            -o /tmp/JP.zip \
-            https://download.geonames.org/export/dump/JP.zip
-          unzip -p /tmp/JP.zip JP.txt > /tmp/JP.txt
-          test -s /tmp/JP.txt
+          python scripts/build-single-word-candidates.py /tmp/wnjpn.db data/candidates.js
 
-      - name: Build six single-word candidate pools
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/build-single-word-candidates.py /tmp/wnjpn.db /tmp/JP.txt data/candidates.js
-
-      - name: Verify 30000 unique single-word candidates per category
+      - name: Verify 30000 unique common single-word candidates per category
         shell: bash
         run: |
           set -euo pipefail
@@ -55,6 +51,8 @@ jobs:
           expected = {'主役','場所','小道具','行動','状態','結果'}
           assert set(stats['counts']) == expected, stats['counts']
           assert stats.get('single_term_only') is True, stats
+          assert stats.get('proper_nouns_allowed') is False, stats
+          assert stats.get('sources') == ['Japanese WordNet v1.1'], stats
           for key, count in stats['counts'].items():
               assert count == 30000, (key, count)
           print(stats['counts'])
@@ -82,5 +80,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/candidates.js data/candidate-stats.json index.html
-          git commit -m 'Use single-word 30000-candidate pools in site'
+          git commit -m 'Use common-word 30000-candidate pools in site'
           git push
