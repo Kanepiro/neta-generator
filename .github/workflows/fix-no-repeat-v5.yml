@@ -1,0 +1,66 @@
+name: Fix no-repeat history v5
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-no-repeat-v5.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make no-repeat history permanent
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text()
+
+          # Neta: always fold currently displayed values into seen history.
+          old_load = "function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE)||'{}');state.seen=Array.isArray(s.seen)?s.seen:[];state.values=s.values||{};state.locks=s.locks||{};}catch(e){}try{const s=JSON.parse(localStorage.getItem(SENTENCE_STORAGE)||'{}');sentenceState.bags=s.bags||{};sentenceState.values=s.values||{};sentenceState.text=s.text||'';}catch(e){}}"
+          new_load = "function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE)||'{}');state.values=s.values||{};state.locks=s.locks||{};state.seen=[...new Set([...(Array.isArray(s.seen)?s.seen:[]),...Object.values(state.values).filter(Boolean)])];}catch(e){}try{const s=JSON.parse(localStorage.getItem(SENTENCE_STORAGE)||'{}');sentenceState.values=s.values||{};sentenceState.seen=[...new Set([...(Array.isArray(s.seen)?s.seen:[]),...Object.values(sentenceState.values).filter(Boolean)])];sentenceState.text=s.text||'';}catch(e){}}"
+          if old_load not in s:
+              raise SystemExit('expected load() block not found')
+          s = s.replace(old_load, new_load)
+
+          # Sentence generator: same permanent no-repeat behavior instead of refilling a bag.
+          s = s.replace("const SENTENCE_STORAGE = 'sentence-generator-v2-bags';", "const SENTENCE_STORAGE = 'sentence-generator-v3-no-repeat';")
+          s = s.replace("const sentenceState = { values:{}, bags:{}, text:'' };", "const sentenceState = { values:{}, seen:[], text:'' };")
+
+          old_sentence = "function sentenceRefill(key){const last=sentenceState.values[key];let bag=shuffle(SENTENCE_DATA[key]);if(last&&bag.length>1&&bag[bag.length-1]===last){const i=Math.floor(Math.random()*(bag.length-1));[bag[i],bag[bag.length-1]]=[bag[bag.length-1],bag[i]];}sentenceState.bags[key]=bag;}\nfunction sentenceDraw(key){if(!Array.isArray(sentenceState.bags[key])||sentenceState.bags[key].length===0)sentenceRefill(key);let idx=sentenceState.bags[key].length-1;if(sentenceState.bags[key][idx]===sentenceState.values[key]&&sentenceState.bags[key].length>1)idx--;const [next]=sentenceState.bags[key].splice(idx,1);sentenceState.values[key]=next;return next;}"
+          new_sentence = "function sentenceDraw(key,forbidden=new Set()){const seen=new Set(sentenceState.seen);const candidates=SENTENCE_DATA[key].filter(c=>!seen.has(c)&&!forbidden.has(c));if(candidates.length===0){toast(`${key}は未使用候補を使い切りました`);return null;}const next=candidates[Math.floor(Math.random()*candidates.length)];sentenceState.seen.push(next);sentenceState.values[key]=next;saveSentence();return next;}"
+          if old_sentence not in s:
+              raise SystemExit('expected sentence draw block not found')
+          s = s.replace(old_sentence, new_sentence)
+
+          old_make = "function makeSentence(){SENTENCE_KEYS.forEach(k=>sentenceDraw(k));const v=sentenceState.values;const patterns=[`${v.主役}が${v.場所}で${v.小道具}を${v.行動}。${v.結果}。`,`${v.場所}で、${v.主役}が${v.小道具}を${v.行動}。${v.結果}。`,`${v.主役}は${v.場所}で${v.小道具}を${v.行動}。${v.結果}。`];sentenceState.text=patterns[Math.floor(Math.random()*patterns.length)];saveSentence();renderSentence();}"
+          new_make = "function makeSentence(){const used=new Set();for(const k of SENTENCE_KEYS){const next=sentenceDraw(k,used);if(!next)return;used.add(next);}const v=sentenceState.values;const patterns=[`${v.主役}が${v.場所}で${v.小道具}を${v.行動}。${v.結果}。`,`${v.場所}で、${v.主役}が${v.小道具}を${v.行動}。${v.結果}。`,`${v.主役}は${v.場所}で${v.小道具}を${v.行動}。${v.結果}。`];sentenceState.text=patterns[Math.floor(Math.random()*patterns.length)];saveSentence();renderSentence();}"
+          if old_make not in s:
+              raise SystemExit('expected makeSentence block not found')
+          s = s.replace(old_make, new_make)
+
+          old_reset = "document.getElementById('resetSentence').onclick=()=>{if(!confirm('文章の抽選履歴をリセットしますか？'))return;localStorage.removeItem(SENTENCE_STORAGE);sentenceState.values={};sentenceState.bags={};sentenceState.text='';makeSentence();toast('文章履歴をリセットしました')};"
+          new_reset = "document.getElementById('resetSentence').onclick=()=>{if(!confirm('文章の抽選履歴をリセットしますか？'))return;localStorage.removeItem(SENTENCE_STORAGE);sentenceState.values={};sentenceState.seen=[];sentenceState.text='';makeSentence();toast('文章履歴をリセットしました')};"
+          if old_reset not in s:
+              raise SystemExit('expected resetSentence block not found')
+          s = s.replace(old_reset, new_reset)
+
+          p.write_text(s)
+          PY
+      - name: Commit change
+        shell: bash
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Harden permanent no-repeat history"
+          git push
