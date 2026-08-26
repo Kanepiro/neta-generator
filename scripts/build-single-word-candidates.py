@@ -54,11 +54,19 @@ def stable(values, salt):
     return sorted(values, key=lambda x: hashlib.sha256((salt + "\0" + x).encode("utf-8")).digest())
 
 
-def take(values, salt, target=TARGET):
-    out = stable(values, salt)[:target]
-    if len(out) < target:
-        raise RuntimeError(f"{salt}: only {len(out):,} single-word candidates; need {target:,}")
-    return out
+def take_priority(pools, salt, target=TARGET):
+    """Fill from category-specific pools in order; use broader pools only if needed."""
+    out = []
+    seen = set()
+    for tier, pool in enumerate(pools):
+        for value in stable(pool, f"{salt}-{tier}"):
+            if value in seen:
+                continue
+            seen.add(value)
+            out.append(value)
+            if len(out) == target:
+                return out
+    raise RuntimeError(f"{salt}: only {len(out):,} single-word candidates; need {target:,}")
 
 
 def root_synsets(conn, lemmas):
@@ -144,7 +152,6 @@ def geonames_terms(path):
             if len(cols) < 8:
                 continue
             feature_class = cols[6]
-            # Geographic features only; all classes below describe actual places/features.
             if feature_class not in {'A', 'H', 'L', 'P', 'R', 'S', 'T', 'V'}:
                 continue
             terms.append(cols[1])
@@ -179,14 +186,14 @@ def build(db_path, geonames_path):
     state_nouns = words_for_synsets(conn, state, {'n'})
     place_names = geonames_terms(geonames_path)
 
-    # Every category is made only from existing dictionary/geographic terms.
-    # No "Xの近く", "Xを動かす", "Xで終わる" or other generated phrases.
-    actors = take(merge_unique(person_words, physical_words, nouns), 'actor')
-    places = take(place_names, 'place')
-    props = take(merge_unique(artifact_words, natural_words, physical_words, nouns), 'prop')
-    actions = take(merge_unique(verbs, action_nouns, event_nouns, nouns), 'action')
-    states = take(merge_unique(adjectives, adverbs, state_nouns, event_nouns, nouns), 'state')
-    results = take(merge_unique(event_nouns, state_nouns, action_nouns, verbs, nouns), 'result')
+    # One box = one existing term. No generated phrases.
+    # Category-specific vocabulary is always consumed before broad fallback vocabulary.
+    actors = take_priority([person_words, physical_words, nouns], 'actor')
+    places = take_priority([place_names], 'place')
+    props = take_priority([artifact_words, natural_words, physical_words, nouns], 'prop')
+    actions = take_priority([verbs, action_nouns, event_nouns, nouns], 'action')
+    states = take_priority([adjectives, adverbs, state_nouns, event_nouns, nouns], 'state')
+    results = take_priority([event_nouns, state_nouns, action_nouns, verbs, nouns], 'result')
 
     data = {
         '主役': actors,
@@ -207,8 +214,9 @@ def build(db_path, geonames_path):
     stats = {
         'target_per_category': TARGET,
         'single_term_only': True,
+        'category_priority': True,
         'sources': ['Japanese WordNet v1.1', 'GeoNames Japan'],
-        'method': '30,000 existing single terms per category; no generated phrases or modifier expansion',
+        'method': '30,000 existing single terms per category; category-specific pools first; no generated phrases or modifier expansion',
         'counts': {k: len(v) for k, v in data.items()},
         'source_pools': {
             'japanese_words_total_after_single_term_filter': len(every_word),
