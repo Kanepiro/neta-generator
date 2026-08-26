@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/build-real-candidates.yml'
       - 'scripts/build-real-candidates.py'
+      - 'scripts/switch-to-real-data.py'
   workflow_dispatch:
 
 permissions:
@@ -48,16 +49,27 @@ jobs:
           print(stats['counts'])
           PY
 
-      - name: Commit generated candidate data
+      - name: Switch site to real candidate data
         shell: bash
         run: |
           set -euo pipefail
-          if [ -z "$(git status --porcelain -- data/candidates.js data/candidate-stats.json)" ]; then
-            echo 'Generated data unchanged.'
+          python scripts/switch-to-real-data.py
+          grep -q '<script src="./data/candidates.js"></script>' index.html
+          if grep -q 'function expandCategory(' index.html; then
+            echo 'Rejected synthetic expansion code still exists.' >&2
+            exit 1
+          fi
+
+      - name: Commit generated data and site switch
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain -- data/candidates.js data/candidate-stats.json index.html)" ]; then
+            echo 'Generated data and site are unchanged.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/candidates.js data/candidate-stats.json
-          git commit -m 'Generate six real 30000-candidate pools'
+          git add data/candidates.js data/candidate-stats.json index.html
+          git commit -m 'Use real 30000-candidate pools in site'
           git push
