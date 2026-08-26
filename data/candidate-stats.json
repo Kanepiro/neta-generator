@@ -1,0 +1,27 @@
+{
+  "target_per_category": 30000,
+  "source": "Japanese WordNet v1.1",
+  "source_url": "https://github.com/bond-lab/wnja/releases/tag/v1.1",
+  "method": "30,000 distinct lexical-root candidates per category; no cartesian adjective/modifier expansion",
+  "counts": {
+    "主役": 30000,
+    "場所": 30000,
+    "小道具": 30000,
+    "行動": 30000,
+    "状態": 30000,
+    "結果": 30000
+  },
+  "source_pools": {
+    "japanese_words_total": 87610,
+    "nouns": 65407,
+    "verbs": 15435,
+    "adjectives": 8530,
+    "adverbs": 4076,
+    "physical_nouns": 36557,
+    "person_or_living_nouns": 12928,
+    "location_nouns": 6078,
+    "action_nouns": 11827,
+    "event_nouns": 13240,
+    "state_nouns": 11056
+  }
+}
