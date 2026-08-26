@@ -52,7 +52,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- data/candidates.js data/candidate-stats.json; then
+          if [ -z "$(git status --porcelain -- data/candidates.js data/candidate-stats.json)" ]; then
             echo 'Generated data unchanged.'
             exit 0
           fi
