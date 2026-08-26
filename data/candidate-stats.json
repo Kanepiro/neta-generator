@@ -1,11 +1,12 @@
 {
   "target_per_category": 30000,
   "single_term_only": true,
+  "category_priority": true,
   "sources": [
     "Japanese WordNet v1.1",
     "GeoNames Japan"
   ],
-  "method": "30,000 existing single terms per category; no generated phrases or modifier expansion",
+  "method": "30,000 existing single terms per category; category-specific pools first; no generated phrases or modifier expansion",
   "counts": {
     "主役": 30000,
     "場所": 30000,
