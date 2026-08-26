@@ -1,0 +1,7 @@
+GeoNames geographical data
+Source: https://www.geonames.org/
+Download: https://download.geonames.org/export/dump/
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+License URL: https://creativecommons.org/licenses/by/4.0/
+
+This project uses Japanese place-name data from GeoNames for the 場所 candidate pool.
