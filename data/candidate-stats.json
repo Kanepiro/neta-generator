@@ -1,12 +1,13 @@
 {
   "target_per_category": 30000,
   "single_term_only": true,
+  "proper_nouns_allowed": false,
+  "proper_noun_filter": "UniDic via fugashi; unknown tokens rejected",
   "category_priority": true,
   "sources": [
-    "Japanese WordNet v1.1",
-    "GeoNames Japan"
+    "Japanese WordNet v1.1"
   ],
-  "method": "30,000 existing single terms per category; category-specific pools first; no generated phrases or modifier expansion",
+  "method": "30,000 existing common single terms per category; proper nouns and generated phrases forbidden",
   "counts": {
     "主役": 30000,
     "場所": 30000,
@@ -16,16 +17,16 @@
     "結果": 30000
   },
   "source_pools": {
-    "japanese_words_total_after_single_term_filter": 86075,
-    "nouns": 64658,
-    "verbs": 15018,
-    "adjectives": 8320,
-    "adverbs": 3908,
-    "physical_nouns": 36233,
-    "person_or_living_nouns": 12823,
-    "action_nouns": 11700,
-    "event_nouns": 13088,
-    "state_nouns": 10921,
-    "geonames_japanese_terms": 134655
+    "japanese_words_total_after_filters": 76921,
+    "nouns": 56191,
+    "verbs": 14610,
+    "adjectives": 7948,
+    "adverbs": 3832,
+    "physical_nouns": 29825,
+    "person_or_living_nouns": 9687,
+    "location_like_nouns": 5817,
+    "action_nouns": 11180,
+    "event_nouns": 12497,
+    "state_nouns": 10118
   }
 }
