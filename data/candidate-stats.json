@@ -1,20 +1,29 @@
 {
-  "target_per_category": 30000,
+  "minimum_per_category": 1000,
   "single_term_only": true,
   "proper_nouns_allowed": false,
   "proper_noun_filter": "UniDic via fugashi; unknown tokens rejected",
-  "category_priority": true,
+  "strict_category_pools": true,
+  "cross_category_fallback": false,
   "sources": [
     "Japanese WordNet v1.1"
   ],
-  "method": "30,000 existing common single terms per category; proper nouns and generated phrases forbidden",
+  "method": "Only category-compatible WordNet/POS pools; no generic fallback to reach a fixed count",
+  "category_definitions": {
+    "主役": "person / organism / animal nouns",
+    "場所": "location / structure / facility / room / area / road / route / path nouns",
+    "小道具": "artifact / instrument / device / container / vehicle / natural object / plant / food / substance nouns, excluding actors and places",
+    "行動": "verbs",
+    "状態": "adjectives / adverbs",
+    "結果": "event / change / happening / process nouns"
+  },
   "counts": {
-    "主役": 30000,
-    "場所": 30000,
-    "小道具": 30000,
-    "行動": 30000,
-    "状態": 30000,
-    "結果": 30000
+    "主役": 9687,
+    "場所": 4841,
+    "小道具": 14261,
+    "行動": 14610,
+    "状態": 11294,
+    "結果": 12497
   },
   "source_pools": {
     "japanese_words_total_after_filters": 76921,
@@ -22,11 +31,10 @@
     "verbs": 14610,
     "adjectives": 7948,
     "adverbs": 3832,
-    "physical_nouns": 29825,
     "person_or_living_nouns": 9687,
-    "location_like_nouns": 5817,
-    "action_nouns": 11180,
-    "event_nouns": 12497,
-    "state_nouns": 10118
+    "location_like_nouns": 4841,
+    "artifact_nouns": 10116,
+    "natural_item_nouns": 8550,
+    "event_nouns": 12497
   }
 }

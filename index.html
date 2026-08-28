@@ -94,7 +94,7 @@ button.locked,.primary{background:var(--lime);color:#11140d;border-color:var(--l
         <button id="copyAll">結果をコピー</button>
         <button id="resetHistory">抽選履歴をリセット</button>
       </div>
-      <div class="note">各カテゴリ30,000件の実候補です。一度出た言葉は、カテゴリをまたいでも抽選履歴をリセットするまで再登場しません。6枠の中でも同じ言葉は重複しません。<br>抽選履歴はこの端末のブラウザ内にだけ保存されます。外部API・AI API・有料サービスは使用しません。</div>
+      <div class="note">各カテゴリは項目に合う実候補だけを使用しています。一度出た言葉は、カテゴリをまたいでも抽選履歴をリセットするまで再登場しません。6枠の中でも同じ言葉は重複しません。<br>抽選履歴はこの端末のブラウザ内にだけ保存されます。外部API・AI API・有料サービスは使用しません。</div>
     </div>
   </section>
 
@@ -163,18 +163,19 @@ const DATA = {
 };
 
 
+const MIN_CANDIDATES_PER_CATEGORY = 1000;
 const CANDIDATE_DATA_READY = !!window.CANDIDATE_DATA && Object.keys(DATA).every(key =>
-  Array.isArray(window.CANDIDATE_DATA[key]) && window.CANDIDATE_DATA[key].length === 30000
+  Array.isArray(window.CANDIDATE_DATA[key]) && window.CANDIDATE_DATA[key].length >= MIN_CANDIDATES_PER_CATEGORY
 );
 if (!CANDIDATE_DATA_READY) {
   document.body.innerHTML = '<div style="padding:24px;font-family:sans-serif;color:white;background:#11140d;min-height:100vh">候補データの読み込みに失敗しました。ページを再読み込みしてください。</div>';
-  throw new Error('30,000-candidate data failed to load');
+  throw new Error('strict-category candidate data failed to load');
 }
 for (const key of Object.keys(DATA)) DATA[key] = window.CANDIDATE_DATA[key];
 
 const KEYS = Object.keys(DATA);
-const STORAGE = 'neta-generator-v5-common-single-no-proper';
-const SENTENCE_STORAGE = 'sentence-generator-v4-full-pools';
+const STORAGE = 'neta-generator-v6-strict-categories';
+const SENTENCE_STORAGE = 'sentence-generator-v5-strict-categories';
 const TAB_STORAGE = 'generator-active-tab';
 const state = { values:{}, locks:{}, seen:[] };
 const sentenceState = { values:{}, seen:[], text:'' };
