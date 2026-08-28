@@ -1,4 +1,4 @@
-name: Build real 30000 candidate pools
+name: Build strict category candidate pools
 
 on:
   push:
@@ -34,36 +34,43 @@ jobs:
           gzip -dc /tmp/wnjpn.db.gz > /tmp/wnjpn.db
           test -s /tmp/wnjpn.db
 
-      - name: Build six common single-word candidate pools
+      - name: Build six strict category pools
         shell: bash
         run: |
           set -euo pipefail
           python scripts/build-single-word-candidates.py /tmp/wnjpn.db data/candidates.js
 
-      - name: Verify 30000 unique common single-word candidates per category
+      - name: Verify category separation
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           import json
           from pathlib import Path
-          stats = json.loads(Path('data/candidate-stats.json').read_text(encoding='utf-8'))
+
+          stats = json.loads(
+              Path('data/candidate-stats.json').read_text(encoding='utf-8')
+          )
           expected = {'主役','場所','小道具','行動','状態','結果'}
           assert set(stats['counts']) == expected, stats['counts']
           assert stats.get('single_term_only') is True, stats
           assert stats.get('proper_nouns_allowed') is False, stats
+          assert stats.get('strict_category_pools') is True, stats
+          assert stats.get('cross_category_fallback') is False, stats
           assert stats.get('sources') == ['Japanese WordNet v1.1'], stats
+          minimum = int(stats.get('minimum_per_category', 1000))
           for key, count in stats['counts'].items():
-              assert count == 30000, (key, count)
+              assert count >= minimum, (key, count, minimum)
           print(stats['counts'])
           PY
 
-      - name: Switch site to real candidate data
+      - name: Switch site to strict category data
         shell: bash
         run: |
           set -euo pipefail
           python scripts/switch-to-real-data.py
           grep -q '<script src="./data/candidates.js"></script>' index.html
+          grep -q 'MIN_CANDIDATES_PER_CATEGORY = 1000' index.html
           if grep -q 'function expandCategory(' index.html; then
             echo 'Rejected synthetic expansion code still exists.' >&2
             exit 1
@@ -80,7 +87,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/candidates.js data/candidate-stats.json index.html
-          git commit -m 'Use common-word 30000-candidate pools in site'
+          git commit -m 'Use strict category-matched candidate pools'
           git fetch origin main
           git rebase origin/main
           git push origin main
